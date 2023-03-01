@@ -11,7 +11,7 @@ public class GoogleMobileAdsDemoScript : MonoBehaviour
 #if UNITY_ANDROID
     private string _adUnitId = "ca-app-pub-5057438790307275/8484413824";
 #elif UNITY_IPHONE
-  private string _adUnitId = "ca-app-pub-5057438790307275/8205212225";
+  private string _adUnitId = "ca-app-pub-3940256099942544/2934735716";
 #else
   private string _adUnitId = "unused";
 #endif
@@ -125,8 +125,29 @@ public class GoogleMobileAdsDemoScript : MonoBehaviour
         // Initialize the Google Mobile Ads SDK.
         MobileAds.Initialize(initStatus => {
 
-            LoadAd();
+      
         });
     }
+
+    public void ShowBanner()
+    {
+        LoadAd();
+    }
+
+    public void ShowInterstitial()
+    {
+
+    }
+
+    public void ShowNativeBanner()
+    {
+
+    }
+
+    public void ShowReward()
+    {
+
+    }
+
 
 }
