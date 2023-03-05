@@ -2,10 +2,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using GoogleMobileAds.Api;
+using TMPro;
 using UnityEngine;
 
 public class GoogleMobileAdsDemoScript : MonoBehaviour
 {
+    [SerializeField]
+    private TextMeshProUGUI _itemCount;
+    private double _amount;
 
     // These ad units are configured to always serve test ads.
 #if UNITY_ANDROID
@@ -17,6 +21,99 @@ public class GoogleMobileAdsDemoScript : MonoBehaviour
 #endif
 
     BannerView _bannerView;
+    private RewardedAd rewardedAd; 
+
+    // Start is called before the first frame update
+    public void Start()
+    {
+        //// When true all events raised by GoogleMobileAds will be invoked
+        //// on the Unity main thread. The default value is false.
+        //MobileAds.RaiseAdEventsOnUnityMainThread = true;
+
+        // Initialize the Google Mobile Ads SDK.
+        MobileAds.Initialize(initStatus => {
+             
+            CreateAndLoadRewardedAd();
+        });
+
+    }
+
+
+    public void CreateAndLoadRewardedAd()
+    {
+#if UNITY_ANDROID
+            string adUnitId = "ca-app-pub-3940256099942544/5224354917";
+#elif UNITY_IPHONE
+        string adUnitId = "ca-app-pub-3940256099942544/1712485313";
+#else
+            string adUnitId = "unexpected_platform";
+#endif
+
+        this.rewardedAd = new RewardedAd(adUnitId);
+        // Called when an ad request has successfully loaded.
+        this.rewardedAd.OnAdLoaded += HandleRewardedAdLoaded;
+        // Called when an ad request failed to load.
+        this.rewardedAd.OnAdFailedToLoad += HandleRewardedAdFailedToLoad;
+        // Called when an ad is shown.
+        this.rewardedAd.OnAdOpening += HandleRewardedAdOpening;
+        // Called when an ad request failed to show.
+        this.rewardedAd.OnAdFailedToShow += HandleRewardedAdFailedToShow;
+        // Called when the user should be rewarded for interacting with the ad.
+        this.rewardedAd.OnUserEarnedReward += HandleUserEarnedReward;
+        // Called when the ad is closed.
+        this.rewardedAd.OnAdClosed += HandleRewardedAdClosed;
+
+        // Create an empty ad request.
+        AdRequest request = new AdRequest.Builder().Build();
+        // Load the rewarded ad with the request.
+        this.rewardedAd.LoadAd(request);
+    }
+
+
+
+    public void HandleRewardedAdLoaded(object sender, EventArgs args)
+    {
+        MonoBehaviour.print("HandleRewardedAdLoaded event received");
+    }
+
+    public void HandleRewardedAdFailedToLoad(object sender, AdFailedToLoadEventArgs args)
+    {
+        MonoBehaviour.print(
+            "HandleRewardedAdFailedToLoad event received with message: "
+                             + args);
+    }
+
+    public void HandleRewardedAdOpening(object sender, EventArgs args)
+    {
+        MonoBehaviour.print("HandleRewardedAdOpening event received");
+    }
+
+    public void HandleRewardedAdFailedToShow(object sender, AdErrorEventArgs args)
+    {
+        MonoBehaviour.print(
+            "HandleRewardedAdFailedToShow event received with message: "
+                             + args.Message);
+    }
+
+    public void HandleRewardedAdClosed(object sender, EventArgs args)
+    {
+        MonoBehaviour.print("HandleRewardedAdClosed event received");
+        CreateAndLoadRewardedAd();
+    }
+
+    public void HandleUserEarnedReward(object sender, Reward args)
+    {
+        string type = args.Type;
+        double amount = args.Amount;
+        MonoBehaviour.print(
+            "HandleRewardedAdRewarded event received for "
+                        + amount.ToString() + " " + type);
+
+        this._amount += amount;
+        _itemCount.text = "Item:" + this._amount;
+    }
+
+
 
     /// <summary>
     /// Creates a 320x50 banner at top of the screen.
@@ -27,7 +124,7 @@ public class GoogleMobileAdsDemoScript : MonoBehaviour
 
         // If we already have a banner, destroy the old one.
         if (_bannerView != null)
-        {
+        { 
             DestroyAd();
         }
 
@@ -35,7 +132,7 @@ public class GoogleMobileAdsDemoScript : MonoBehaviour
         _bannerView = new BannerView(_adUnitId, AdSize.Banner, AdPosition.Bottom);
     }
 
-    /// <summary>
+    /// <summary> 
     /// Creates the banner view and loads a banner ad.
     /// </summary>
     public void LoadAd()
@@ -44,6 +141,7 @@ public class GoogleMobileAdsDemoScript : MonoBehaviour
         if (_bannerView == null)
         {
             CreateBannerView();
+            ListenToAdEvents();
         }
         // create our request used to load the ad.
         var adRequest = new AdRequest.Builder()
@@ -115,20 +213,6 @@ public class GoogleMobileAdsDemoScript : MonoBehaviour
     }
 
 
-    // Start is called before the first frame update
-    public void Start()
-    {
-        //// When true all events raised by GoogleMobileAds will be invoked
-        //// on the Unity main thread. The default value is false.
-        //MobileAds.RaiseAdEventsOnUnityMainThread = true;
-
-        // Initialize the Google Mobile Ads SDK.
-        MobileAds.Initialize(initStatus => {
-
-      
-        });
-    }
-
     public void ShowBanner()
     {
         LoadAd();
@@ -146,7 +230,10 @@ public class GoogleMobileAdsDemoScript : MonoBehaviour
 
     public void ShowReward()
     {
-
+        if (this.rewardedAd.CanShowAd())
+        {
+            this.rewardedAd.Show();
+        }
     }
 
 
