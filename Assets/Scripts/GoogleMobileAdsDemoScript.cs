@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using GoogleMobileAds.Api;
 using TMPro;
 using UnityEngine;
@@ -40,64 +38,82 @@ public class GoogleMobileAdsDemoScript : MonoBehaviour
             string adUnitId = "unexpected_platform";
 #endif
 
-        _rewardedAd = new RewardedAd(adUnitId);
-        // Called when an ad request has successfully loaded.
-        _rewardedAd.OnAdLoaded += HandleRewardedAdLoaded;
-        // Called when an ad request failed to load.
-        _rewardedAd.OnAdFailedToLoad += HandleRewardedAdFailedToLoad;
-        // Called when an ad is shown.
-        _rewardedAd.OnAdOpening += HandleRewardedAdOpening;
-        // Called when an ad request failed to show.
-        _rewardedAd.OnAdFailedToShow += HandleRewardedAdFailedToShow;
-        // Called when the user should be rewarded for interacting with the ad.
-        _rewardedAd.OnUserEarnedReward += HandleUserEarnedReward;
-        // Called when the ad is closed.
-        _rewardedAd.OnAdClosed += HandleRewardedAdClosed;
+        // Clean up the old ad before loading a new one.
+        if (_rewardedAd != null)
+        {
+            _rewardedAd.Destroy();
+            _rewardedAd = null;
+        }
 
-        // Create an empty ad request.
-        AdRequest request = new AdRequest.Builder().Build();
-        // Load the rewarded ad with the request.
-        _rewardedAd.LoadAd(request);
+        Debug.Log("Loading the rewarded ad.");
+
+        // create our request used to load the ad.
+        var adRequest = new AdRequest.Builder().Build();
+
+        // send the request to load the ad.
+        RewardedAd.Load(adUnitId, adRequest,
+            (RewardedAd ad, LoadAdError error) =>
+            {
+              // if error is not null, the load request failed.
+              if (error != null || ad == null)
+                {
+                    Debug.LogError("Rewarded ad failed to load an ad " +
+                                   "with error : " + error);
+                    return;
+                }
+
+                Debug.Log("Rewarded ad loaded with response : "
+                          + ad.GetResponseInfo());
+
+                _rewardedAd = ad;
+
+                RegisterEventHandlers(ad);
+            });
+
     }
 
-
-
-    public void HandleRewardedAdLoaded(object sender, EventArgs args)
+    /**
+     * リワード広告のイベントをリッスンする
+     * 広告の動作をより細かくカスタマイズするには、
+     * 広告のライフサイクルで生じるさまざまなイベント（起動、終了など）を利用します。
+     * こういったイベントをリッスンするには、以下のようにデリゲートを登録します。
+     */
+    private void RegisterEventHandlers(RewardedAd ad)
     {
-        print("HandleRewardedAdLoaded event received");
-    }
-
-    public void HandleRewardedAdFailedToLoad(object sender, AdFailedToLoadEventArgs args)
-    {
-        print("HandleRewardedAdFailedToLoad event received with message: " + args);
-    }
-
-    public void HandleRewardedAdOpening(object sender, EventArgs args)
-    {
-        print("HandleRewardedAdOpening event received");
-    }
-
-    public void HandleRewardedAdFailedToShow(object sender, AdErrorEventArgs args)
-    {
-        print("HandleRewardedAdFailedToShow event received with message: "
-                             + args.Message);
-    }
-
-    public void HandleRewardedAdClosed(object sender, EventArgs args)
-    {
-        print("HandleRewardedAdClosed event received");
-        CreateAndLoadRewardedAd();
-    }
-
-    public void HandleUserEarnedReward(object sender, Reward args)
-    {
-        string type = args.Type;
-        double amount = args.Amount;
-        print("HandleRewardedAdRewarded event received for "
-                        + amount.ToString() + " " + type);
-
-        _amount += amount;
-        _itemCount.text = "Item:" + _amount;
+        // Raised when the ad is estimated to have earned money.
+        ad.OnAdPaid += (AdValue adValue) =>
+        {
+            Debug.Log(String.Format("Rewarded ad paid {0} {1}.",
+                adValue.Value,
+                adValue.CurrencyCode));
+        };
+        // Raised when an impression is recorded for an ad.
+        ad.OnAdImpressionRecorded += () =>
+        {
+            Debug.Log("Rewarded ad recorded an impression.");
+        };
+        // Raised when a click is recorded for an ad.
+        ad.OnAdClicked += () =>
+        {
+            Debug.Log("Rewarded ad was clicked.");
+        };
+        // Raised when an ad opened full screen content.
+        ad.OnAdFullScreenContentOpened += () =>
+        {
+            Debug.Log("Rewarded ad full screen content opened.");
+        };
+        // Raised when the ad closed full screen content.
+        ad.OnAdFullScreenContentClosed += () =>
+        {
+            Debug.Log("Rewarded ad full screen content closed.");
+            CreateAndLoadRewardedAd();
+        };
+        // Raised when the ad failed to open full screen content.
+        ad.OnAdFullScreenContentFailed += (AdError error) =>
+        {
+            Debug.LogError("Rewarded ad failed to open full screen content " +
+                           "with error : " + error);
+        };
     }
 
 #endregion
@@ -111,7 +127,7 @@ public class GoogleMobileAdsDemoScript : MonoBehaviour
     {
         Debug.Log("Creating banner view");
 
-            // These ad units are configured to always serve test ads.
+        // These ad units are configured to always serve test ads.
 #if UNITY_ANDROID
         string adUnitId = "ca-app-pub-5057438790307275/8484413824";
 #elif UNITY_IPHONE
@@ -236,11 +252,13 @@ public class GoogleMobileAdsDemoScript : MonoBehaviour
     {
         if (_rewardedAd.CanShowAd())
         {
-            _rewardedAd.Show();
+            _rewardedAd.Show((Reward reward) =>
+            {
+                _amount += reward.Amount;
+                _itemCount.text = "Item:" + _amount;
+            });
         }
     }
 
     #endregion
-
-
 }
