@@ -27,6 +27,7 @@ public class GoogleMobileAdsDemoScript : MonoBehaviour
     }
 
     #region RewardedAd
+    // https://developers.google.com/admob/unity/rewarded?hl=ja
 
     public void CreateAndLoadRewardedAd()
     {
@@ -116,9 +117,10 @@ public class GoogleMobileAdsDemoScript : MonoBehaviour
         };
     }
 
-#endregion
+    #endregion
 
     #region Banner
+    // https://developers.google.com/admob/unity/banner?hl=ja
 
     /// <summary>
     /// Creates a 320x50 banner at top of the screen.
