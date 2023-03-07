@@ -1,0 +1,9 @@
+<dependencies>
+    <androidPackages>
+        <androidPackage spec="jp.fluct.mediation.gma:gma-mediation:9.4.1">
+            <repositories>
+                <repository>https://voyagegroup.github.io/FluctSDK-Android/m2/repository</repository>
+            </repositories>
+        </androidPackage>
+    </androidPackages>
+</dependencies>

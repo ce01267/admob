@@ -1,0 +1,6 @@
+<dependencies>
+    <iosPods>
+        <iosPod name="GoogleMobileAdsMediationFluct" version="6.22.2" minTargetSdk="8.1">
+        </iosPod>
+    </iosPods>
+</dependencies>
