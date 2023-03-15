@@ -18,7 +18,7 @@ public class GoogleMobileAdsDemoScript : MonoBehaviour
         //// When true all events raised by GoogleMobileAds will be invoked
         //// on the Unity main thread. The default value is false.
         //MobileAds.RaiseAdEventsOnUnityMainThread = true;
-
+        
         // Initialize the Google Mobile Ads SDK.
         MobileAds.Initialize(initStatus => {
             CreateAndLoadRewardedAd();
@@ -34,7 +34,7 @@ public class GoogleMobileAdsDemoScript : MonoBehaviour
 #if UNITY_ANDROID
             string adUnitId = "ca-app-pub-3940256099942544/5224354917";
 #elif UNITY_IPHONE
-        string adUnitId = "ca-app-pub-3940256099942544/1712485313";
+        string adUnitId = "ca-app-pub-5057438790307275/1238510538";
 #else
             string adUnitId = "unexpected_platform";
 #endif
@@ -133,7 +133,7 @@ public class GoogleMobileAdsDemoScript : MonoBehaviour
 #if UNITY_ANDROID
         string adUnitId = "ca-app-pub-5057438790307275/8484413824";
 #elif UNITY_IPHONE
-        string adUnitId = "ca-app-pub-3940256099942544/2934735716";
+        string adUnitId = "ca-app-pub-5057438790307275/5133551762ßß";
 #else
         string adUnitId = "unused";
 #endif
